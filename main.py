@@ -1,11 +1,11 @@
-mport sqlite3
+import sqlite3
 import hashlib
 import pyfiglet
 from simple_term_menu import TerminalMenu
 import time
 initialising = pyfiglet.figlet_format("Initialising")
 print(initialising)
-connection = sqlite3.connect("library3.db")
+connection = sqlite3.connect("library.db")
 cursor = connection.cursor()
 welcome = pyfiglet.figlet_format("Welcome to Benne's Library")
 # time.sleep(1.5)
