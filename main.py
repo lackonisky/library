@@ -126,7 +126,7 @@ def account_manager():
     if output == 0:
         username_change()
     elif output == 1:
-        if input("are you sure you want to delete your account y/n") == y:
+        if input("are you sure you want to delete your account y/n") == "y":
             delete_account()
         else:
             menu_check()
@@ -191,7 +191,8 @@ def user_manager():
 def edit_item():
     exit
 
-
+def delete_account():
+    exit
 
 def loaned_books():
     exit
