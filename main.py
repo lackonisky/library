@@ -194,6 +194,13 @@ def edit_item():
 def delete_account():
     exit
 
+def book_number():
+    num = input("input the book number ")
+    cursor.execute("SELECT * from Books WHERE BOOKNO = ?",(num,))
+    bookno = cursor.fetchall()
+    bookno = bookno[0]
+    return bookno
+
 def loaned_books():
     exit
 
@@ -210,5 +217,13 @@ def username_change():
         cursor.execute("UPDATE Users SET USERNAME = ? WHERE USERNAME = ?")
     #######################################################
     #######################################################
-  
-login()
+bookno = book_number()  
+print("""Book Number: {}
+Title: {}
+ISBN: {}
+Author: {}
+Date Published: {}
+Item Format: {}
+Stock Level: {}
+Item Description: {}
+    """.format(bookno[0], bookno[1], bookno[2], bookno[3], bookno[4], bookno[5], bookno[6], bookno[7]))
