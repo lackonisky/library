@@ -95,7 +95,7 @@ def menu_check():
 
 def book_search(): #################################################
     print("Book Search")
-    choices = ["ISBN Search", "Name Search", "Author Search"]
+    choices = ["ISBN Search", "Name Search", "Author Search", "Book Number Search"]
     menu = TerminalMenu(choices)
     output = menu.show()
     print("You selected", choices[output], """ 
@@ -106,6 +106,8 @@ def book_search(): #################################################
         Name_search()
     elif output == 2:
         Author_search()
+    elif output == 3:
+        book_number()
 
 def ISBN_search():###################
     exit
@@ -199,7 +201,7 @@ def book_number():
     cursor.execute("SELECT * from Books WHERE BOOKNO = ?",(num,))
     bookno = cursor.fetchall()
     bookno = bookno[0]
-    return bookno
+    print_item(bookno)
 
 def loaned_books():
     exit
@@ -217,3 +219,19 @@ def username_change():
         cursor.execute("UPDATE Users SET USERNAME = ? WHERE USERNAME = ?")
     #######################################################
     #######################################################
+
+def print_item(BookNo):
+    item = """Book Number: {}
+Title: {}
+ISBN: {}
+Author: {}
+Date Published: {}
+Item Format: {}
+Stock Level: {}
+Item Description: {}
+    """.format(BookNo[0], BookNo[3], BookNo[1], BookNo[2], BookNo[4], BookNo[5], BookNo[6], BookNo[7])
+    print(item, """
+          """)
+    menu_check()
+
+login()
