@@ -89,7 +89,7 @@ def menu_check():
     if id == 1:
         admin_menu()
     elif id == 0:
-        simple_menu()
+        simple_menu()``
     else:
         login()
 
@@ -120,7 +120,7 @@ def Author_search(): ######################
 
 def account_manager():
     print("Account Manager")
-    choices = ["Change Username", "Delete Account"]
+    choices = ["Change Username", "Delete Account", "New Account"]
     menu = TerminalMenu(choices)
     output = menu.show()
     print("You selected", choices[output], """ 
@@ -132,6 +132,8 @@ def account_manager():
             delete_account()
         else:
             menu_check()
+    elif output == 2:
+        account_creation()
 
 
 
@@ -233,5 +235,29 @@ Item Description: {}
     print(item, """
           """)
     menu_check()
+
+def account_creation():
+    
+    while True:
+        uName = input("Enter the username of the account youd like to create ")
+        cursor.execute("SELECT * from Users WHERE Username = ?", (uName,))
+        taken = cursor.fetchall()
+        if not taken:
+            break
+    while True:
+        passw = input("Please input your password")
+        passcheck = input("Please repeat your password")
+        if passw == passcheck:
+            break
+    passw = password_hashing(passw)
+    cursor.execute("""INSERT INTO Users (USERNAME, PASS, ACCESS)
+VALUES(?, ?, ?);""", (uName, passw, 0,))
+    connection.commit()
+    print("Account Created")
+    menu_check()
+
+
+
+
 
 login()
