@@ -89,7 +89,7 @@ def menu_check():
     if id == 1:
         admin_menu()
     elif id == 0:
-        simple_menu()``
+        simple_menu()
     else:
         login()
 
@@ -101,13 +101,14 @@ def book_search(): #################################################
     print("You selected", choices[output], """ 
           """)
     if output == 0:
-        ISBN_search()
+        bookno = ISBN_search()
     elif output == 1:
-        Name_search()
+        bookno = Name_search()
     elif output == 2:
-        Author_search()
+        bookno = Author_search()
     elif output == 3:
-        book_number()
+        bookno = book_number()
+    return bookno
 
 def ISBN_search():###################
     exit
@@ -167,7 +168,10 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
 
 
 def item_stock():#####################
-    exit
+    book = book_search()
+    print(book[3], ",", book[2])
+    print("Stock: ", book[6])
+    menu_check()
 
 def delete_item():##################
     exit
@@ -203,7 +207,7 @@ def book_number():
     cursor.execute("SELECT * from Books WHERE BOOKNO = ?",(num,))
     bookno = cursor.fetchall()
     bookno = bookno[0]
-    print_item(bookno)
+    return bookno
 
 def loaned_books():
     exit
