@@ -86,9 +86,9 @@ def login():
         menu_check()
 
 def menu_check():
-    if id == 1:
+    if level == 1:
         admin_menu()
-    elif id == 0:
+    elif level == 0:
         simple_menu()
     else:
         login()
@@ -119,7 +119,7 @@ def Name_search():#####################
 def Author_search(): ######################
     exit
 
-def account_manager():
+def user_manager():
     print("Account Manager")
     choices = ["Change Username", "Delete Account", "New Account"]
     menu = TerminalMenu(choices)
@@ -193,7 +193,7 @@ Item Description: {}
         print(item, """
           """)
 
-def user_manager():
+def account_manager():
     exit
 
 def edit_item():
