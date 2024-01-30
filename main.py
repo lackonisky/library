@@ -111,13 +111,13 @@ def book_search(): #################################################
     return bookno
 
 def ISBN_search():###################
-    exit
+    menu_check()
 
 def Name_search():#####################
-    exit
+    menu_check()
 
 def Author_search(): ######################
-    exit
+    menu_check()
 
 def user_manager():
     print("Account Manager")
@@ -167,14 +167,14 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
         inventory()
 
 
-def item_stock():#####################
+def item_stock():
     book = book_search()
     print(book[3], ",", book[2])
     print("Stock: ", book[6])
     menu_check()
 
 def delete_item():##################
-    exit
+    menu_check()
 
 def item_list():
     cursor.execute("SELECT * FROM Books")
@@ -192,15 +192,15 @@ Item Description: {}
     """.format(items[n][0], items[n][1], items[n][2], items[n][3], items[n][4], items[n][5], items[n][6], items[n][7])
         print(item, """
           """)
-
+    menu_check()
 def account_manager():
-    exit
+    menu_check()
 
 def edit_item():
-    exit
+    menu_check()
 
 def delete_account():
-    exit
+    menu_check()
 
 def book_number():
     num = input("input the book number ")
@@ -210,10 +210,10 @@ def book_number():
     return bookno
 
 def loaned_books():
-    exit
+    menu_check()
 
 def loan_history():
-    exit
+    menu_check()
 
 def username_change():
     if level == 1:
