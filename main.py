@@ -26,7 +26,7 @@ def admin_menu():
     print("You selected", choices[output], """ 
           """)
     if output == 0:
-        book_search()
+        view_book()
     elif output == 1:
         item_list()
     elif output == 2:
@@ -101,23 +101,48 @@ def book_search(): #################################################
     print("You selected", choices[output], """ 
           """)
     if output == 0:
-        bookno = ISBN_search()
+        bookinfo = ISBN_search()
     elif output == 1:
-        bookno = Name_search()
+        bookinfo = Name_search()
     elif output == 2:
-        bookno = Author_search()
+        bookinfo = Author_search()
     elif output == 3:
-        bookno = book_number()
-    return bookno
+        bookinfo = book_number()
+    return bookinfo
+
+def view_book():
+    bookinfo = book_search()
+    print_item(bookinfo)
+
+def book_number():
+    num = input("input the book number ")
+    cursor.execute("SELECT * from Books WHERE BOOKNO = ?",(num,))
+    bookinfo = cursor.fetchall()
+    bookinfo = bookinfo[0]
+    return bookinfo
 
 def ISBN_search():###################
-    menu_check()
+    isbn = input("input the book number ")
+    cursor.execute("SELECT * from Books WHERE ISBN = ?",(isbn,))
+    bookinfo = cursor.fetchall()
+    bookinfo = bookinfo[0]
+    return bookinfo
 
 def Name_search():#####################
-    menu_check()
+    name = input("input the book number ")
+    name = "%" + name + "%"
+    cursor.execute("SELECT * from Books WHERE TITLE LIKE ?",(name,))
+    bookinfo = cursor.fetchall()
+    bookinfo = bookinfo[0]
+    return bookinfo
 
 def Author_search(): ######################
-    menu_check()
+    author = input("input the book number ")
+    author = "%" + author + "%"
+    cursor.execute("SELECT * from Books WHERE AUTHOR LIKE ?",(author,))
+    bookinfo = cursor.fetchall()
+    bookinfo = bookinfo[0]
+    return bookinfo
 
 def user_manager():
     print("Account Manager")
@@ -135,8 +160,6 @@ def user_manager():
             menu_check()
     elif output == 2:
         account_creation()
-
-
 
 def new_item():
     itemName = input("Enter the Title of the item you'd like to add ")
@@ -166,7 +189,6 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
         print("succesful")
         inventory()
 
-
 def item_stock():
     book = book_search()
     print(book[3], ",", book[2])
@@ -193,8 +215,10 @@ Item Description: {}
         print(item, """
           """)
     menu_check()
+
 def account_manager():
-    menu_check()
+    username = input("Enter the username of the account you'd like to manage")
+
 
 def edit_item():
     menu_check()
@@ -202,18 +226,6 @@ def edit_item():
 def delete_account():
     menu_check()
 
-def book_number():
-    num = input("input the book number ")
-    cursor.execute("SELECT * from Books WHERE BOOKNO = ?",(num,))
-    bookno = cursor.fetchall()
-    bookno = bookno[0]
-    return bookno
-
-def loaned_books():
-    menu_check()
-
-def loan_history():
-    menu_check()
 
 def username_change():
     if level == 1:
@@ -223,10 +235,10 @@ def username_change():
         available = cursor.fetchall()
         print(available)
         cursor.execute("UPDATE Users SET USERNAME = ? WHERE USERNAME = ?")
-    #######################################################
-    #######################################################
+#    elif level == 2:
 
-def print_item(BookNo):
+
+def print_item(bookinfo):
     item = """Book Number: {}
 Title: {}
 ISBN: {}
@@ -235,7 +247,7 @@ Date Published: {}
 Item Format: {}
 Stock Level: {}
 Item Description: {}
-    """.format(BookNo[0], BookNo[3], BookNo[1], BookNo[2], BookNo[4], BookNo[5], BookNo[6], BookNo[7])
+    """.format(bookinfo[0], bookinfo[3], bookinfo[1], bookinfo[2], bookinfo[4], bookinfo[5], bookinfo[6], bookinfo[7])
     print(item, """
           """)
     menu_check()
