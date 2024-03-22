@@ -96,7 +96,7 @@ def admin_menu(): #displays the admin user menu and gives them options to select
 
 def inventory(): #admin menu for managing inventory, allows new items, stock updates, item deletion, editing items
     print("Inventory Management")
-    choices = ["Add new item", "Update Inventory Stock", "Delete Item", "Edit Item", "Back"] 
+    choices = ["Add new item", "Update Inventory Stock", "Edit Item", "Back"] 
     menu = TerminalMenu(choices)
     output = menu.show()
     print("You selected", choices[output], """ 
@@ -106,10 +106,8 @@ def inventory(): #admin menu for managing inventory, allows new items, stock upd
     elif output == 1:
         item_stock()
     elif output == 2:
-        delete_item()
-    elif output == 3:
         edit_item()
-    elif output == 4:
+    elif output == 3:
         admin_menu()
 
 
@@ -122,30 +120,35 @@ def login(): # asks for username and password, hashes password and compares to h
     time.sleep(0.5)
     print("""Login Portal
           """)
+
+    username = input("Please input your username: ")
+    password = input("Please enter your password: ")
+    password = password_hashing(password)
+    print(password)
+    cursor.execute("SELECT PASS from Users WHERE USERNAME = ?", (username,))
+    passw = cursor.fetchall()
     try:
-        username = input("Please input your username: ")
-        password = input("Please enter your password: ")
-        password = password_hashing(password)
-        print(password)
-        cursor.execute("SELECT PASS from Users WHERE USERNAME = ?", (username,))
-        passw = cursor.fetchall()
         passw = str(passw[0][0])
-        print(passw)
-        if password == passw:
-            cursor.execute("SELECT ACCESS from Users WHERE USERNAME = ?", (username,))
-            global level #level is set so menu_check can determine access level
-            level = cursor.fetchall()
-            level = int(level[0][0])
-            cursor.execute("SELECT IDNO from Users WHERE USERNAME = ? AND PASS = ?", (username, password,))
-            global id #user id is set as global so it can be accessed by all functions
-            id = cursor.fetchall()
-            id = int(id[0][0])
-            print(level)
-            print(id)
-            menu_check()
     except:
         print("Username or password incorrect")
         login()
+    print(passw)
+    if password == passw:
+        cursor.execute("SELECT ACCESS from Users WHERE USERNAME = ?", (username,))
+        global level #level is set so menu_check can determine access level
+        level = cursor.fetchall()
+        level = int(level[0][0])
+        cursor.execute("SELECT IDNO from Users WHERE USERNAME = ? AND PASS = ?", (username, password,))
+        global id #user id is set as global so it can be accessed by all functions
+        id = cursor.fetchall()
+        id = int(id[0][0])
+        print(level)
+        print(id)
+        menu_check()
+    else:
+        print("Username or password incorrect")
+        login()
+
 def menu_check(): #checks the users access level and sends them to the relevant menu
     if level == 1:
         admin_menu()
@@ -171,11 +174,11 @@ def book_search(): #allows user to determine type of search to use and return th
         bookinfo = book_number()
     return bookinfo
 
-def view_book():
+def view_book(): #determines the type of search and runs it then puts output into printing function
     bookinfo = book_search()
     print_item(bookinfo)
 
-def book_number():
+def book_number(): #Takes the book number from the user then compares it to book numbers in db, try except used if book isnt found.
     try:
         num = input("input the book number ")
         cursor.execute("SELECT * from Books WHERE BOOKNO = ?",(num,))
@@ -186,7 +189,7 @@ def book_number():
         print("Book not found or invalid input")
         menu_check()
 
-def ISBN_search():###################
+def ISBN_search(): #Takes the ISBN number from the user then compares it to book numbers in db, try except used if book isnt found.
     try:
         isbn = input("input the book number ")
         cursor.execute("SELECT * from Books WHERE ISBN = ?",(isbn,))
@@ -197,7 +200,7 @@ def ISBN_search():###################
         print("Book not found or invalid input")
         menu_check()
 
-def Name_search():#####################
+def Name_search(): #Takes the book name from the user then compares it to book numbers in db using where like with regex, try except used if book isnt found.
     try:
         name = input("input the book number ")
         name = "%" + name + "%"
@@ -208,7 +211,7 @@ def Name_search():#####################
     except:
         print("Book not found or invalid input")
         menu_check()
-def Author_search(): ######################
+def Author_search(): #Takes the Author from the user then compares it to book numbers in db with regex, try except used if book isnt found.
     try:
         author = input("input the Authors name ")
         author = "%" + author + "%"
@@ -220,9 +223,9 @@ def Author_search(): ######################
         print("Book not found or invalid input")
         menu_check()
 
-def user_manager():
+def user_manager(): #User manager menu, access for admins
     print("Account Manager")
-    choices = ["Change Username", "Delete Account", "New Account"]
+    choices = ["Change Username", "New Account"]
     menu = TerminalMenu(choices)
     output = menu.show()
     print("You selected", choices[output], """ 
@@ -230,14 +233,9 @@ def user_manager():
     if output == 0:
         username_change()
     elif output == 1:
-        if input("are you sure you want to delete your account y/n") == "y":
-            delete_account()
-        else:
-            menu_check()
-    elif output == 2:
         account_creation()
 
-def new_item():
+def new_item(): # Takes book info for new book
     itemName = input("Enter the Title of the item you'd like to add ")
     ISBN = input("Enter the ISBN of the item you'd like to add ")
     Author = input("Enter the Author of the item you'd like to add ")
@@ -248,7 +246,7 @@ def new_item():
         if stockLevel.isnumeric():
             break
     itemDescription = input("Enter a description of the item you'd like to add")
-    adding = """Title: {}
+    adding = """Title: {} 
 ISBN: {}
 Author: {}
 Date Published: {}
@@ -256,28 +254,26 @@ Item Format: {}
 Stock Level: {}
 Item Description: {}
     """.format(itemName, ISBN, Author, datePublished, itemFormat, stockLevel, itemDescription)
-    print(adding)
+    print(adding) #user inputs are concatenated into a string to allow user to check
     check = ["Yes", "No"]
     menu = TerminalMenu(check)
     output = menu.show()
     if output == 0:
         cursor.execute("""INSERT INTO Books (ISBN, AUTHOR, TITLE, DATEPUBLISHED, FORMAT, STOCK, DESCRIPTION)
 VALUES (?, ?, ?, ?, ?, ?, ?);
-""", (ISBN, Author, itemName, datePublished, itemFormat, stockLevel, itemDescription,))
+""", (ISBN, Author, itemName, datePublished, itemFormat, stockLevel, itemDescription,)) #user inputs are used in sql INSERT INTO statement to add book
         connection.commit()
         print("succesful")
         inventory()
 
-def item_stock():
+def item_stock(): #takes the book info from book search and prints the stock, author and title
     book = book_search()
     print(book[3], ",", book[2])
     print("Stock: ", book[6])
     menu_check()
 
-def delete_item():##################
-    menu_check()
 
-def item_list():
+def item_list(): # Goes through every item in the database and prints the information in a user readable format.
     cursor.execute("SELECT * FROM Books")
     items = cursor.fetchall()
     print(len(items))
@@ -297,9 +293,9 @@ Item Description: {}
 
 
 
-def edit_item():
+def edit_item(): #Gets the book number to be edited, then asks for new values to be put in place
     while True:
-        bookNum = input("Enter the stock level of the item you'd like to add ")
+        bookNum = input("Enter the Book Number of the item you'd like to change ")
         if bookNum.isnumeric():
             break
     itemName = input("Enter the new Title of the item you'd like to change ")
@@ -342,22 +338,20 @@ WHERE BOOKNO = ?;
         menu_check()
 
 def delete_account():
-    cursor.execute("""DELETE FROM BOOKS
+    cursor.execute("""DELETE FROM Users
 WHERE IDNO = ?""", (id,))
     connection.commit()
     menu_check()
 
-def username_change():
+def username_change(): # Allows the changing of an account username
     if level == 1:
-        while True:
+        while True: # Ensures that a valid username is being changed
             changed_user = input("Enter the username of the account you'd like to change")
             cursor.execute("SELECT USERNAME from Users WHERE USERNAME = ?", (changed_user,))
             check = cursor.fetchone()
             if check:
                 break
-            
-
-        while True:
+        while True: # Ensures the username being changed to isnt already taken
             change_to = input("Enter the username you'd like to change it to")
             cursor.execute("SELECT USERNAME from Users WHERE USERNAME = ?", (change_to,))
             check = cursor.fetchone()
@@ -365,11 +359,11 @@ def username_change():
                 break
             print("not available")
         cursor.execute("UPDATE Users SET USERNAME = ? WHERE USERNAME = ?", (change_to, changed_user, ))
-        connection.commit()
+        connection.commit() # sets the new username
         menu_check()
 
 
-def print_item(bookinfo):
+def print_item(bookinfo): # concatenates the book info into an easily readable string.
     item = """Book Number: {}
 Title: {}
 ISBN: {}
@@ -383,7 +377,7 @@ Item Description: {}
           """)
     menu_check()
 
-def account_creation():
+def account_creation(): # Facilitates the creation of a new user account.
     
     while True:
         uName = input("Enter the username of the account youd like to create ")
@@ -405,4 +399,4 @@ VALUES(?, ?, ?);""", (uName, passw, 0,))
     menu_check()
 
 
-initialize()
+initialize() #Calls the first function.
