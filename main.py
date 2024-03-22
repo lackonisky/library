@@ -96,7 +96,7 @@ def admin_menu(): #displays the admin user menu and gives them options to select
 
 def inventory(): #admin menu for managing inventory, allows new items, stock updates, item deletion, editing items
     print("Inventory Management")
-    choices = ["Add new item", "Update Inventory Stock", "Edit Item", "Back"] 
+    choices = ["Add new item", "Update Inventory Stock", "Edit Item", "Delete Item", "Back"] 
     menu = TerminalMenu(choices)
     output = menu.show()
     print("You selected", choices[output], """ 
@@ -108,6 +108,8 @@ def inventory(): #admin menu for managing inventory, allows new items, stock upd
     elif output == 2:
         edit_item()
     elif output == 3:
+        delete_item()
+    elif output == 4:
         admin_menu()
 
 
@@ -291,8 +293,14 @@ Item Description: {}
           """)
     menu_check()
 
-
-
+def delete_item():
+    bookinfo = book_search()
+    bookinfo = bookinfo[0]
+    print(bookinfo)
+    cursor.execute("""DELETE FROM Books
+WHERE BOOKNO = ?""", (bookinfo,))
+    connection.commit()
+    menu_check()
 def edit_item(): #Gets the book number to be edited, then asks for new values to be put in place
     while True:
         bookNum = input("Enter the Book Number of the item you'd like to change ")
