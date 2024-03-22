@@ -4,11 +4,13 @@ import pyfiglet
 from simple_term_menu import TerminalMenu
 import time
 import os
-
+#initialize checks if the database exists
 def initialize():
+    # if database exists connect to it
 	if os.path.exists("./library.db") == True:
 		print(pyfiglet.figlet_format("Found"))
 		database_connection()
+    # calls database initialization if one isnt present
 	else:
 		initialization = pyfiglet.figlet_format("System Initialization")
 		print(initialization)
@@ -42,15 +44,16 @@ def create_database():
 	);"""
 	)
 	connection.commit()
+    #asks user for account details to be used for the admin account
 	username = input("""Enter the username you'd like to use for the base admin account""")
 	password = input("""Enter the password you'd like to use for the base admin account""")
-	password_hashing(password)
+	password_hashing(password) #password hashed for security
 	cursor.execute("""INSERT INTO Users (USERNAME, PASS, ACCESS)
-VALUES (?, ?, 1);""", (username, password,))
+VALUES (?, ?, 1);""", (username, password,)) #base account is put into users field of database
 	connection.commit()
-	initialize()
+	initialize() #calls back to initialize for db check
 
-def database_connection():
+def database_connection(): #connects to the database and sets the cursor
     initializing = pyfiglet.figlet_format("Initialising")
     print(initializing)
     global connection
@@ -62,7 +65,7 @@ def database_connection():
     print(welcome)
     login()
 
-def simple_menu():
+def simple_menu(): #displays the normal users main menu interface and allows them to select an option
     print("Main Menu")
     choices = ["Search Books", "View book list"]
     menu = TerminalMenu(choices)
@@ -75,7 +78,7 @@ def simple_menu():
     else:
         menu_check()
 
-def admin_menu():
+def admin_menu(): #displays the admin user menu and gives them options to select from
     print("Admin Menu")
     choices = ["Search Books", "View Item list", "User Management", "Inventory Management"]
     menu = TerminalMenu(choices)
@@ -91,7 +94,7 @@ def admin_menu():
     elif output == 3:
         inventory()
 
-def inventory():
+def inventory(): #admin menu for managing inventory, allows new items, stock updates, item deletion, editing items
     print("Inventory Management")
     choices = ["Add new item", "Update Inventory Stock", "Delete Item", "Edit Item", "Back"] 
     menu = TerminalMenu(choices)
@@ -115,32 +118,35 @@ def password_hashing(password): # function to hash the password and return the h
     password = hashlib.sha3_256(password).hexdigest()
     return password
 
-def login():
+def login(): # asks for username and password, hashes password and compares to hash in database
     time.sleep(0.5)
     print("""Login Portal
           """)
-    username = input("Please input your username: ")
-    password = input("Please enter your password: ")
-    password = password_hashing(password)
-    print(password)
-    cursor.execute("SELECT PASS from Users WHERE USERNAME = ?", (username,))
-    passw = cursor.fetchall()
-    passw = str(passw[0][0])
-    print(passw)
-    if password == passw:
-        cursor.execute("SELECT ACCESS from Users WHERE USERNAME = ?", (username,))
-        global level
-        level = cursor.fetchall()
-        level = int(level[0][0])
-        cursor.execute("SELECT IDNO from Users WHERE USERNAME = ? AND PASS = ?", (username, password,))
-        global id
-        id = cursor.fetchall()
-        id = int(id[0][0])
-        print(level)
-        print(id)
-        menu_check()
-
-def menu_check():
+    try:
+        username = input("Please input your username: ")
+        password = input("Please enter your password: ")
+        password = password_hashing(password)
+        print(password)
+        cursor.execute("SELECT PASS from Users WHERE USERNAME = ?", (username,))
+        passw = cursor.fetchall()
+        passw = str(passw[0][0])
+        print(passw)
+        if password == passw:
+            cursor.execute("SELECT ACCESS from Users WHERE USERNAME = ?", (username,))
+            global level #level is set so menu_check can determine access level
+            level = cursor.fetchall()
+            level = int(level[0][0])
+            cursor.execute("SELECT IDNO from Users WHERE USERNAME = ? AND PASS = ?", (username, password,))
+            global id #user id is set as global so it can be accessed by all functions
+            id = cursor.fetchall()
+            id = int(id[0][0])
+            print(level)
+            print(id)
+            menu_check()
+    except:
+        print("Username or password incorrect")
+        login()
+def menu_check(): #checks the users access level and sends them to the relevant menu
     if level == 1:
         admin_menu()
     elif level == 0:
@@ -148,7 +154,7 @@ def menu_check():
     else:
         login()
 
-def book_search(): #################################################
+def book_search(): #allows user to determine type of search to use and return the book information collected from the database
     print("Book Search")
     choices = ["ISBN Search", "Name Search", "Author Search", "Book Number Search"]
     menu = TerminalMenu(choices)
@@ -343,13 +349,24 @@ WHERE IDNO = ?""", (id,))
 
 def username_change():
     if level == 1:
-        changed_user = input("Enter the username of the account you'd like to change")
-        change_to = input("Enter the username you'd like to change it to")
-        cursor.execute("SELECT USERNAME from Users WHERE USERNAME = ?", (change_to,))
-        available = cursor.fetchall()
-        print(available)
-        cursor.execute("UPDATE Users SET USERNAME = ? WHERE USERNAME = ?")
-#    elif level == 2:
+        while True:
+            changed_user = input("Enter the username of the account you'd like to change")
+            cursor.execute("SELECT USERNAME from Users WHERE USERNAME = ?", (changed_user,))
+            check = cursor.fetchone()
+            if check:
+                break
+            
+
+        while True:
+            change_to = input("Enter the username you'd like to change it to")
+            cursor.execute("SELECT USERNAME from Users WHERE USERNAME = ?", (change_to,))
+            check = cursor.fetchone()
+            if not check:
+                break
+            print("not available")
+        cursor.execute("UPDATE Users SET USERNAME = ? WHERE USERNAME = ?", (change_to, changed_user, ))
+        connection.commit()
+        menu_check()
 
 
 def print_item(bookinfo):
